@@ -13,6 +13,8 @@ https://docs.djangoproject.com/en/2.2/ref/settings/
 import os
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
+from datetime import timedelta
+
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 
@@ -27,6 +29,7 @@ DEBUG = True
 
 ALLOWED_HOSTS = ['*']
 
+FIXTURE_DIRS = ['Usuarios/fixtures/']
 
 # Application definition
 
@@ -37,14 +40,12 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'oauth2_provider',  # OAuth2
     'rest_framework',  # API
 ]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
-    'oauth2_provider.middleware.OAuth2TokenMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -107,12 +108,13 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 REST_FRAMEWORK = {
-    'DEFAULT_AUTHENTICATION_CLASSES': (
-        'oauth2_provider.contrib.rest_framework.OAuth2Authentication',
-        'rest_framework.authentication.SessionAuthentication', # To keep the Browsable API
-    ),
     'DEFAULT_PERMISSION_CLASSES': (
         'rest_framework.permissions.IsAuthenticated',
+    ),
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+        'rest_framework.authentication.SessionAuthentication',
+        'rest_framework.authentication.BasicAuthentication',
     ),
 }
 
@@ -141,12 +143,32 @@ STATIC_URL = '/static/'
 AUTHENTICATION_BACKENDS = (
     # Needed to login by username in Django admin, regardless of `allauth`
     'django.contrib.auth.backends.ModelBackend',
-    'oauth2_provider.backends.OAuth2Backend',
 )
 
-# Important to avoid conflicts with the client app
-# also setting its own `sessionid` cookie.
-# Mitigates the PermissionDenied exception bug when
-# both client and server are running under the same domain,
-# also known as `socialaccount_state` bug
-SESSION_COOKIE_NAME = 'oauth2server_sessionid'
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=os.getenv('ACCESS_TOKEN_LIFETIME_MINUTES',5)) ,
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=os.getenv('REFRESH_TOKEN_LIFETIME_MINUTES', 1))  ,
+    'ROTATE_REFRESH_TOKENS': os.getenv('ROTATE_REFRESH_TOKENS', False),
+    'BLACKLIST_AFTER_ROTATION': True,
+
+    'ALGORITHM': 'RS256',
+    # 'SIGNING_KEY': "".join(os.getenv('SIGNING_KEY', 'SIGNING_KEY').split('\n')) ,
+    'SIGNING_KEY': open('/jwt-key','r').read(),
+    # 'VERIFYING_KEY': "".join(os.getenv('VERIFYING_KEY', 'VERIFYING_KEY').split('\n')) ,
+    'VERIFYING_KEY': open('/jwt-key.pub','r').read(),
+    'AUDIENCE': None,
+    'ISSUER': None,
+
+    'AUTH_HEADER_TYPES': ('Bearer',),
+    'USER_ID_FIELD': 'id',
+    'USER_ID_CLAIM': 'user_id',
+
+    'AUTH_TOKEN_CLASSES': ('rest_framework_simplejwt.tokens.AccessToken',),
+    'TOKEN_TYPE_CLAIM': 'token_type',
+
+    'JTI_CLAIM': 'jti',
+
+    'SLIDING_TOKEN_REFRESH_EXP_CLAIM': 'refresh_exp',
+    'SLIDING_TOKEN_LIFETIME': timedelta(minutes= os.getenv('SLIDING_TOKEN_LIFETIME_MINUTES',5)),
+    'SLIDING_TOKEN_REFRESH_LIFETIME': timedelta(days=os.getenv('SLIDING_TOKEN_REFRESH_LIFETIME_DAYS',1)),
+}
