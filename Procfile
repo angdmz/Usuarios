@@ -1,0 +1,1 @@
+web: gunicorn usuarios-api.wsgi --log-file -
