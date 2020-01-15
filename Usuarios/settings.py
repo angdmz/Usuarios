@@ -22,7 +22,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # See https://docs.djangoproject.com/en/2.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'somesecretkey'
+SECRET_KEY = os.getenv('SECRET_KEY','somesecretkey')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -165,9 +165,7 @@ SIMPLE_JWT = {
     'BLACKLIST_AFTER_ROTATION': True,
 
     'ALGORITHM': 'RS256',
-    # 'SIGNING_KEY': "".join(os.getenv('SIGNING_KEY', 'SIGNING_KEY').split('\n')) ,
     'SIGNING_KEY': open('/jwt-key','r').read(),
-    # 'VERIFYING_KEY': "".join(os.getenv('VERIFYING_KEY', 'VERIFYING_KEY').split('\n')) ,
     'VERIFYING_KEY': open('/jwt-key.pub','r').read() ,
     'AUDIENCE': None,
     'ISSUER': None,
