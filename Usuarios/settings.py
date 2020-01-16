@@ -15,7 +15,12 @@ import os
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 from datetime import timedelta
 
+from cryptography.hazmat.backends import default_backend
+from cryptography.hazmat.primitives.ciphers import Cipher, modes
+from cryptography.hazmat.primitives.ciphers.algorithms import AES
+
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/2.2/howto/deployment/checklist/
@@ -163,6 +168,18 @@ AUTHENTICATION_BACKENDS = (
     'django.contrib.auth.backends.ModelBackend',
 )
 
+import base64
+
+key = os.getenv('PRIVATE_KEY_PASSPHRASE').encode()
+iv = ''.join(os.getenv('INITIALIZATION_VECTOR').split(' ')).encode()
+backend = default_backend()
+
+cipher = Cipher(AES(key), modes.CBC(iv), backend=backend)
+decryptor = cipher.decryptor()
+
+result = decryptor.update(base64.decodebytes(open('private_key_digest').read().encode())) + decryptor.finalize()
+
+
 SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(minutes=os.getenv('ACCESS_TOKEN_LIFETIME_MINUTES',5)) ,
     'REFRESH_TOKEN_LIFETIME': timedelta(days=os.getenv('REFRESH_TOKEN_LIFETIME_MINUTES', 1))  ,
@@ -170,7 +187,8 @@ SIMPLE_JWT = {
     'BLACKLIST_AFTER_ROTATION': True,
 
     'ALGORITHM': 'RS256',
-    'SIGNING_KEY': "".join(os.getenv('SIGNING_KEY', 'SIGNING_KEY').split('\n')).encode() ,
+    # 'SIGNING_KEY': "".join(os.getenv('SIGNING_KEY', 'SIGNING_KEY').split('\n')) ,
+    'SIGNING_KEY': result,
     'VERIFYING_KEY': "".join(os.getenv('VERIFYING_KEY', 'VERIFYING_KEY').split('\n')).encode() ,
     'AUDIENCE': None,
     'ISSUER': None,
