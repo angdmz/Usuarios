@@ -170,8 +170,8 @@ SIMPLE_JWT = {
     'BLACKLIST_AFTER_ROTATION': True,
 
     'ALGORITHM': 'RS256',
-    'SIGNING_KEY': "".join(os.getenv('SIGNING_KEY', 'SIGNING_KEY').split('\n')) ,
-    'VERIFYING_KEY': "".join(os.getenv('VERIFYING_KEY', 'VERIFYING_KEY').split('\n')) ,
+    'SIGNING_KEY': "".join(os.getenv('SIGNING_KEY', 'SIGNING_KEY').split('\n')).encode() ,
+    'VERIFYING_KEY': "".join(os.getenv('VERIFYING_KEY', 'VERIFYING_KEY').split('\n')).encode() ,
     'AUDIENCE': None,
     'ISSUER': None,
 
