@@ -181,8 +181,8 @@ result = decryptor.update(base64.decodebytes(open('private_key_digest').read().e
 
 
 SIMPLE_JWT = {
-    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=os.getenv('ACCESS_TOKEN_LIFETIME_MINUTES',5)) ,
-    'REFRESH_TOKEN_LIFETIME': timedelta(days=os.getenv('REFRESH_TOKEN_LIFETIME_MINUTES', 1))  ,
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=int(os.getenv('ACCESS_TOKEN_LIFETIME_MINUTES',5))),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=int(os.getenv('REFRESH_TOKEN_LIFETIME_MINUTES', 1))),
     'ROTATE_REFRESH_TOKENS': os.getenv('ROTATE_REFRESH_TOKENS', False),
     'BLACKLIST_AFTER_ROTATION': True,
 
